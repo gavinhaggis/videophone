@@ -1,0 +1,80 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #2a2a2a 0%, #111 100%);
+  font-family: sans-serif;
+}
+
+canvas {
+  display: block;
+  position: fixed;
+  inset: 0;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  z-index: 100;
+  gap: 16px;
+}
+
+#loading.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#status-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 50;
+  white-space: nowrap;
+}
+
+#status-bar.visible {
+  opacity: 1;
+}
+
+.lil-gui {
+  --background-color: #1c1c1c;
+  --text-color: #ddd;
+  --title-background-color: #111;
+  --title-text-color: #fff;
+  --widget-color: #2c2c2c;
+  --hover-color: #383838;
+  --focus-color: #444;
+  --number-color: #7ec8e3;
+  --string-color: #b5e488;
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D iPhone Renderer</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/",
+      "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.20.0/dist/lil-gui.esm.js"
+    }
+  }
+  </script>
+  <!-- JSZip loaded as global before ES modules -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p id="loading-text">Loading model...</p>
+  </div>
+  <div id="status-bar"></div>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
