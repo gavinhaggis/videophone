@@ -16,14 +16,25 @@ const JS_FILES = [
   'js/main.js',
 ];
 
-function build() {
-  // ── GLB ──────────────────────────────────────────────────────────────────
-  const glbPath = path.join(ROOT, 'scene.glb');
+function embedGlb(varName, filename) {
+  const glbPath = path.join(ROOT, filename);
   if (!fs.existsSync(glbPath)) {
-    console.error('Error: scene.glb not found');
+    console.error(`Error: ${filename} not found`);
     process.exit(1);
   }
-  const glbBase64 = fs.readFileSync(glbPath).toString('base64');
+  const b64 = fs.readFileSync(glbPath).toString('base64');
+  return [
+    `const ${varName} = (() => {`,
+    `  const b64 = '${b64}';`,
+    '  const bin = atob(b64);',
+    '  const buf = new Uint8Array(bin.length);',
+    '  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);',
+    "  return URL.createObjectURL(new Blob([buf], { type: 'model/gltf-binary' }));",
+    '})();',
+  ].join('\n');
+}
+
+function build() {
 
   // ── JS files ──────────────────────────────────────────────────────────────
   const cdnImports = new Set();
@@ -55,23 +66,26 @@ function build() {
     chunks.push(`// ── ${file} ──\n${code}`);
   }
 
-  // Replace the GLB file path with the injected blob URL variable
+  // Replace GLB file paths with injected blob URL variables
   let js = chunks.join('\n\n');
   js = js.replace(/['"]\.\/scene\.glb['"]/g, '__glbUrl');
+  js = js.replace(/['"]\.\/macbook\.glb['"]/g, '__macbookGlbUrl');
 
   // ── CSS ───────────────────────────────────────────────────────────────────
   const css = fs.readFileSync(path.join(ROOT, 'css/styles.css'), 'utf8');
 
+  // ── Body content from index.html (preserves loading screen SVG etc.) ───────
+  const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const bodyMatch = indexHtml.match(/<body>([\s\S]*?)<\/body>/);
+  const bodyContent = bodyMatch[1]
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '') // strip script tags
+    .trimEnd();
+
   // ── Assemble HTML ─────────────────────────────────────────────────────────
   const glbDecoder = [
-    '// Decode embedded GLB into a blob URL',
-    'const __glbUrl = (() => {',
-    `  const b64 = '${glbBase64}';`,
-    '  const bin = atob(b64);',
-    '  const buf = new Uint8Array(bin.length);',
-    "  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);",
-    "  return URL.createObjectURL(new Blob([buf], { type: 'model/gltf-binary' }));",
-    '})();',
+    '// Decode embedded GLBs into blob URLs',
+    embedGlb('__glbUrl', 'scene.glb'),
+    embedGlb('__macbookGlbUrl', 'macbook.glb'),
   ].join('\n');
 
   const html = [
@@ -96,11 +110,7 @@ function build() {
     '  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></' + 'script>',
     '</head>',
     '<body>',
-    '  <div id="loading">',
-    '    <div class="spinner"></div>',
-    '    <p id="loading-text">Loading model...</p>',
-    '  </div>',
-    '  <div id="status-bar"></div>',
+    bodyContent,
     '  <script type="module">',
     [...cdnImports].join('\n'),
     '',

@@ -1,4 +1,4 @@
-import { easing, lerpState } from './utils.js';
+import { easing, interpolateKeyframes } from './utils.js';
 
 export function captureState(model) {
   return {
@@ -26,15 +26,18 @@ export function applyState(model, state, camera = null, orbit = null) {
 export class AnimationController {
   constructor() {
     this.isPlaying = false;
+    this.loop = false;
     this._start = null;
+    this._middle = null;
     this._end = null;
     this._duration = 2;
     this._easingKey = 'cubic';
     this._t0 = null;
   }
 
-  play(startState, endState, duration, easingKey) {
+  play(startState, middleState, endState, duration, easingKey) {
     this._start = startState;
+    this._middle = middleState;
     this._end = endState;
     this._duration = duration;
     this._easingKey = easingKey;
@@ -48,9 +51,17 @@ export class AnimationController {
     if (this._t0 === null) this._t0 = timestamp;
 
     const t = Math.min((timestamp - this._t0) / (this._duration * 1000), 1);
-    const state = lerpState(this._start, this._end, easing[this._easingKey](t));
+    const state = interpolateKeyframes(this._start, this._middle, this._end, t, easing[this._easingKey]);
 
-    if (t >= 1) this.isPlaying = false;
+    if (t >= 1) {
+      if (this.loop) {
+        // Boomerang: swap start ↔ end (middle stays, works naturally in reverse)
+        [this._start, this._end] = [this._end, this._start];
+        this._t0 = timestamp;
+      } else {
+        this.isPlaying = false;
+      }
+    }
     return state;
   }
 }

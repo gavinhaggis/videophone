@@ -17,6 +17,7 @@ export function initScene() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
+  renderer.setClearColor(0x000000, 0);
 
   // PMREMGenerator gives the metallic iPhone body realistic reflections without an HDR file
   const pmrem = new THREE.PMREMGenerator(renderer);

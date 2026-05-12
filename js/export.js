@@ -1,9 +1,9 @@
-import { lerpState } from './utils.js';
+import { interpolateKeyframes } from './utils.js';
 import { applyState } from './animation.js';
 import { updateScreen } from './iphone.js';
 
 export async function exportVideo(renderer, scene, camera, model, startState, endState, options) {
-  const { fps, duration, easingFn, width, height, onProgress, ctx, screenCanvas, screenTexture, screenImage } = options;
+  const { fps, duration, easingFn, width, height, onProgress, ctx, screenCanvas, screenTexture, screenImage, middleState } = options;
   const totalFrames = Math.round(fps * duration);
 
   const origPixelRatio = renderer.getPixelRatio();
@@ -30,7 +30,7 @@ export async function exportVideo(renderer, scene, camera, model, startState, en
 
   for (let i = 0; i <= totalFrames; i++) {
     const t = totalFrames === 0 ? 1 : i / totalFrames;
-    const state = lerpState(startState, endState, easingFn(t));
+    const state = interpolateKeyframes(startState, middleState, endState, t, easingFn);
     applyState(model, state, camera, null);
     if (ctx) updateScreen(ctx, screenCanvas, screenTexture, screenImage, state.yOffset);
     renderer.render(scene, camera);
@@ -85,7 +85,7 @@ export function exportSinglePNG(renderer, scene, camera, options) {
 }
 
 export async function exportPNGSequence(renderer, scene, camera, model, startState, endState, options) {
-  const { fps, duration, easingFn, width, height, onProgress, ctx, screenCanvas, screenTexture, screenImage } = options;
+  const { fps, duration, easingFn, width, height, onProgress, ctx, screenCanvas, screenTexture, screenImage, middleState } = options;
   const totalFrames = Math.round(fps * duration);
 
   // Save current renderer state
@@ -106,7 +106,7 @@ export async function exportPNGSequence(renderer, scene, camera, model, startSta
 
   for (let i = 0; i <= totalFrames; i++) {
     const t = totalFrames === 0 ? 1 : i / totalFrames;
-    const state = lerpState(startState, endState, easingFn(t));
+    const state = interpolateKeyframes(startState, middleState, endState, t, easingFn);
     applyState(model, state, camera, null);
     if (ctx) updateScreen(ctx, screenCanvas, screenTexture, screenImage, state.yOffset);
     renderer.render(scene, camera);
